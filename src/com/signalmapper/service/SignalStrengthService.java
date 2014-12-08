@@ -1,7 +1,5 @@
 package com.signalmapper.service;
 
-import com.signalmapper.activity.R;
-
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -16,9 +14,15 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.signalmapper.activity.R;
+import com.signalmapper.enums.NetworkType;
+import com.signalmapper.util.CountryUtil;
+import com.signalmapper.util.OperatorUtil;
+import com.signalmapper.util.TechnologyUtil;
+
 public class SignalStrengthService extends Service {
 
-	TelephonyManager Tel;
+	TelephonyManager telephonyManager;
 	MyPhoneStateListener MyListener;
 
 	@Override
@@ -31,11 +35,29 @@ public class SignalStrengthService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		// Let it continue running until it is stopped.
 		MyListener = new MyPhoneStateListener();
-		Tel = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		Toast.makeText(getApplicationContext(),
-				"Strength of your signal is " + Tel.getNetworkOperator(),
-				Toast.LENGTH_SHORT).show();
-		Tel.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		Long countryID = CountryUtil.validateAndInsertCountry(
+				telephonyManager.getNetworkCountryIso(), this);
+
+		int networkType = telephonyManager.getNetworkType();
+		String networkClass = NetworkType.getLabel(networkType);
+		Long technologyID = TechnologyUtil.validateAndInsertTechnology(
+				networkClass, this);
+		
+		Log.d("Country ID is ", String.valueOf(countryID));
+		Log.d("Technology ID is ", String.valueOf(technologyID));
+
+
+		String operatorName = telephonyManager.getNetworkOperatorName();
+		Long operatorID = OperatorUtil.validateAndInsertOperator(operatorName,
+				this);
+		Log.d("Operator ID is ", String.valueOf(operatorID));
+
+
+		OperatorUtil.insertOperatorCountry(operatorID, countryID, this);
+
+		telephonyManager.listen(MyListener,
+				PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
 		return START_STICKY;
 	}
 
@@ -57,9 +79,6 @@ public class SignalStrengthService extends Service {
 		public void onSignalStrengthsChanged(SignalStrength signalStrength) {
 			super.onSignalStrengthsChanged(signalStrength);
 			int strength = signalStrength.getGsmSignalStrength();
-			Log.d("Signal Strength is ", String.valueOf(strength));
-			
-
 			if (strength < 5) {
 				sendNotification(strength);
 			}

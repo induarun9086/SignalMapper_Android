@@ -1,9 +1,9 @@
 package com.signalmapper.activity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -16,7 +16,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.signalmapper.service.GPSTrackerService;
 import com.signalmapper.service.SignalStrengthService;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
 
 	GPSTrackerService gps;
 	private GoogleMap mMap;
