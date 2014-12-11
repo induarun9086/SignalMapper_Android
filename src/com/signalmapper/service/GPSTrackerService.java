@@ -11,7 +11,6 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.util.Log;
 
 public class GPSTrackerService  extends Service implements LocationListener  {
 	
@@ -45,8 +44,8 @@ public class GPSTrackerService  extends Service implements LocationListener  {
 
 	@Override
 	public void onLocationChanged(Location location) {
-		// TODO Auto-generated method stub
-		
+	     latitude = location.getLatitude();
+	     longitude = location.getLongitude();
 	}
 
 	@Override
@@ -96,7 +95,6 @@ public class GPSTrackerService  extends Service implements LocationListener  {
                             LocationManager.NETWORK_PROVIDER,
                             MIN_TIME_BW_UPDATES,
                             MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                    Log.d("Network", "Network");
                     if (locationManager != null) {
                         location = locationManager
                                 .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
@@ -113,7 +111,6 @@ public class GPSTrackerService  extends Service implements LocationListener  {
                                 LocationManager.GPS_PROVIDER,
                                 MIN_TIME_BW_UPDATES,
                                 MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                        Log.d("GPS Enabled", "GPS Enabled");
                         if (locationManager != null) {
                             location = locationManager
                                     .getLastKnownLocation(LocationManager.GPS_PROVIDER);

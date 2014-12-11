@@ -27,10 +27,6 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		Intent intent = new Intent(this, SignalStrengthService.class);
-    	startService(intent);
-
-		
 		gps = new GPSTrackerService(MainActivity.this);
 
 		// check if GPS enabled
@@ -39,24 +35,33 @@ public class MainActivity extends Activity {
 			double latitude = gps.getLatitude();
 			double longitude = gps.getLongitude();
 
-			mMap = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+			mMap = ((MapFragment) getFragmentManager().findFragmentById(
+					R.id.map)).getMap();
 
 			MarkerOptions marker = new MarkerOptions().position(
 					new LatLng(latitude, longitude)).title("New Marker");
 
 			mMap.setMyLocationEnabled(true);
-			
-			mMap.setMyLocationEnabled(true);
-			CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15);
-		    mMap.animateCamera(cameraUpdate);
+
+			CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
+					new LatLng(latitude, longitude), 15);
+			mMap.animateCamera(cameraUpdate);
 			mMap.addMarker(marker);
-			
+
+			Intent intent = new Intent(this, SignalStrengthService.class);
+			Bundle extras = new Bundle();
+			extras.putDouble("Latitude", latitude);
+			extras.putDouble("Longitude", longitude);
+			intent.putExtras(extras);
+			startService(intent);
+
 		} else {
 			// can't get location
 			// GPS or Network is not enabled
 			// Ask user to enable GPS/network in settings
 			gps.showSettingsAlert();
 		}
+
 	}
 
 	@Override
@@ -76,5 +81,11 @@ public class MainActivity extends Activity {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+	
+	@Override
+	protected void onDestroy()
+	{
+		super.onDestroy();
 	}
 }

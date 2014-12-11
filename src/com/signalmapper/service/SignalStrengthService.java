@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import com.signalmapper.activity.R;
 import com.signalmapper.enums.NetworkType;
 import com.signalmapper.util.CountryUtil;
+import com.signalmapper.util.LocationUtil;
 import com.signalmapper.util.OperatorUtil;
 import com.signalmapper.util.TechnologyUtil;
 
@@ -33,6 +35,23 @@ public class SignalStrengthService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		double latitude = 0;
+		double longitude = 0;
+		if (intent == null) {
+			GPSTrackerService gpsTrackerService = new GPSTrackerService(this);
+			if (gpsTrackerService.canGetLocation()) {
+				latitude = gpsTrackerService.getLatitude();
+				longitude = gpsTrackerService.getLongitude();
+			} else {
+				return START_STICKY;
+			}
+
+		} else {
+			Bundle extras = intent.getExtras();
+			latitude = extras.getDouble("Latitude");
+			longitude = extras.getDouble("Longitude");
+		}
+
 		// Let it continue running until it is stopped.
 		MyListener = new MyPhoneStateListener();
 		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -43,18 +62,18 @@ public class SignalStrengthService extends Service {
 		String networkClass = NetworkType.getLabel(networkType);
 		Long technologyID = TechnologyUtil.validateAndInsertTechnology(
 				networkClass, this);
-		
+
 		Log.d("Country ID is ", String.valueOf(countryID));
 		Log.d("Technology ID is ", String.valueOf(technologyID));
-
 
 		String operatorName = telephonyManager.getNetworkOperatorName();
 		Long operatorID = OperatorUtil.validateAndInsertOperator(operatorName,
 				this);
 		Log.d("Operator ID is ", String.valueOf(operatorID));
 
-
 		OperatorUtil.insertOperatorCountry(operatorID, countryID, this);
+
+		LocationUtil.validateAndInsertLocation(latitude, longitude, this);
 
 		telephonyManager.listen(MyListener,
 				PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);

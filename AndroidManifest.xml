@@ -41,7 +41,7 @@
             android:value="@integer/google_play_services_version" />
 
         <service android:name="com.signalmapper.service.GPSTrackerService" />
-         <service android:name="com.signalmapper.service.SignalStrengthService" />
+        <service android:name="com.signalmapper.service.SignalStrengthService" />
 
         <activity
             android:name=".MainActivity"
